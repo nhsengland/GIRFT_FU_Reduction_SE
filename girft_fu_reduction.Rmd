@@ -1,0 +1,172 @@
+---
+title: "`r paste('GIRFT Outpatient Follow-Up Reduction - ', paramicb)`"
+output: html_document
+date: "`r format(Sys.Date(),'%d/%m/%Y')`"
+sansfont: Calibri   
+params: 
+  icb: paramicb
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+if(paramicb != region_name){
+  param_no_spec <- all_no_spec %>% filter(icb == paramicb)
+  param_activity_proportion <- annual_activity_proportion %>% filter(icb == paramicb)
+  param_large_spec_activity <- larger_specialities_average %>% filter(icb==paramicb)
+  param_wide_year <- wide_year %>% filter(icb==paramicb)
+} else {
+  param_no_spec <- all_no_spec
+  param_activity_proportion <- annual_activity_proportion
+  param_large_spec_activity <- larger_specialities_average
+  param_wide_year <- wide_year
+  }
+
+system_name <- if(paramicb != region_name){
+  system_name <- lkup_system_names %>% 
+    filter(short_name == paramicb) %>% 
+   pull(stp_name)
+  system_name <- str_replace(str_to_title(system_name),'Nhs','NHS')
+} else {
+  system_name <- 'the South East region'
+} 
+
+```
+
+## Purpose and methodology of this document
+
+In order to support `r paste(system_name)` to reach the ambition of reducing outpatient follow up appointments that do not involve a procedure by 25% compared to financial year 2019/20, NHS England has reviewed the activity reported to SUS by the main acute providers within the ICB. This activity has been adjusted for differences in working days in each month and then the 75% ambition has been calculated for each month. This ambition has been compared to the reported activity for the equivalent month in 2022/23 to determine the variance between the ambition and the actual reported activity for 2022/23. 
+
+## Current position {.tabset .tabset-pills}
+
+The charts below show the trusts within `r paste(system_name)` to illustrate the working day adjusted activity for the baseline period, the actual activity for 2022/23 and the ambition. 
+
+```{r activity vs baseline chart,results='asis'}
+icbs <- param_no_spec %>% 
+  distinct(icb) %>% 
+  pull(icb)
+
+for (i in icbs){
+  cat("###", i, '<br>', '\n')
+  icb_data <- param_no_spec %>% 
+    filter((period == 'baseline' | period == 'actual'| period == 'ambition')& icb==i)
+  plot_title <- paste0('Comparison of activity vs baseline vs ambition for ',i,' ICB providers') 
+  plot <- icb_data %>% 
+    ggplot(aes(x=month_of_actual,
+                         y=activity,
+                         color = period))+
+    theme(legend.position = 'bottom',
+          panel.background = element_rect(fill=NA),
+          strip.background = element_rect(fill=NA),
+          axis.line = element_line(colour = 'grey80',
+                                   linewidth = 0.5),
+          axis.text.x = element_text(angle = 30, 
+                                     hjust = 1,
+                                     vjust = 1))+
+    geom_line()+
+    labs(title = plot_title,
+         x='Month')+
+    facet_wrap(~ provider)
+  print(plot)
+  cat('\n', '<br>', '\n\n')
+}
+
+```
+
+## 2022/23 trust activity vs working day adjusted baseline
+
+The table below shows the actual follow-up without procedure activity for 2022/23 vs the working day adjusted baseline. The percentage variance column shows the percentage reduction in 2022/23 levels of activity required in order to meet the ambition. Red highlighting is used for trusts that will need to make a greater than 25% reduction, green for those who are already showing a reduction in follow-up activity (without procedure) compared to the baseline.
+
+```{r baseline vs 2223 actuals}
+param_wide_year %>% 
+  mutate(percent_vs_2223 = percent(percent_vs_2223,1,format='f')) %>% 
+  select(-variance_per_wd) %>% 
+  mutate(percent_vs_2223 = cell_spec(percent_vs_2223,
+                                      background = case_when(
+                                        actual > baseline ~ table_red,
+                                        actual == baseline ~ highlight,
+                                        actual < baseline ~ table_green))) %>% 
+  kbl(caption = '2022/23 trust activity vs working day adjusted baseline',
+      col.names = c('ICB','Trust','Baseline activity', '22/23 actual', 'Ambition', 'Variance','Percentage Variance'),
+      format.args = list(big.mark = ","),
+      escape = FALSE) %>%
+  kable_styling(bootstrap_options = 'striped',
+                font_size = 12,
+                full_width = FALSE)
+```
+## Closing the Gap
+
+NHS England recognises that reducing any amount of activity to 75% of the level undertaken in 2019/20 is not a trivial task. In order to support systems in identifying one possible approach, an analysis has been conducted to try to create a "fair share" goal for the specialities where:
+
+* The trust consistently undertakes activity and 
+* The volume of activity is sufficient to mean that the time and effort required to identify opportunities to reduce activity will have a meaningful impact to the proportion of follow-up activity undertaken by the Trust.  
+
+The criteria used were treatment function codes where:
+
+* Activity has been reported against at least 6 out of the 11 months of available 2022/23 data AND the treatment function either:
+
+  + contribute a minimum of 1% of the trust's total activity OR
+  
+  + there is a monthly average of at least 2000 outpatient follow up appointments (without procedure)
+  
+For the trusts in `r paste(system_name)`, the identified cohorts account for the following percentages of the trusts total follow up activity (without procedure):
+
+```{r proportion of activity table, results = 'asis'}
+param_activity_proportion %>% 
+  mutate(percentage_represented = percent(cohort_activity,1,format='f')) %>% 
+  select(-cohort_activity) %>% 
+  kbl(caption = 'Proportion of trust activity within cohort',
+      col.names = c('ICB', 'Provider', 'Percentage Represented')) %>%
+  kable_styling(bootstrap_options = 'striped',
+                font_size = 12,
+                full_width = FALSE)
+```
+The total variance against the 75% reduction ambition has then been split based on the percentage each of these treatment functions contributes to the activity *of the cohort described above*.
+
+**CAVEAT**
+
+This report has been produced using the "flex" submission of data for March 2023. This means that the reported activity for March is likely to increase significantly when the "freeze" position becomes available. For this reason March 2023 and the counterfactual for March 2020 have been excluded from this initial report. Data for both periods will be included when the March 2023 freeze SUS data becomes available.
+
+## Speciality level reductions {.tabset .tabset-pills}
+
+For the trusts in `r paste(system_name)`, the tab below give the average daily activity for the first 11 months of 2022/23 (March "flex" data has been excluded) and shows the reduction that would be needed in order to achieve the ambition. The reduction is given in two ways: per working day and per month. The per working day figure assumes that at least one clinic is run for that speciality every working day, this will not be true for every speciality so the per month figure is given to show an average monthly reduction which may be more useful for specialities that only run clinics on a weekly or less frequent basis.
+
+It is recognised that not all treatment pathways are equal and some specialities may have more difficulty reducing their number of follow up appointments to 75% of the working day adjusted baseline than others. Our hope is that by identifying the "fair share" split for the providers' larger specialities we are supporting trusts to then balance the reduction goal between specilities according to clinical need.
+
+```{r reduction per day table, results='asis'}
+trusts <- param_large_spec_activity %>% 
+  distinct(provider) %>% 
+  pull(provider)
+
+for (trust in trusts){
+
+cat("###", trust, '<br>', '\n')
+  
+  trust_grouped_df <- param_large_spec_activity %>% 
+    filter(provider == trust) %>%
+    select(treatment_function,
+           avg_monthly_activity,
+           share_of_monthly_variance,
+           avg_activity_per_wd,
+           share_of_daily_variance) %>% 
+    rename(average_daily_activity = avg_activity_per_wd,
+           share_of_daily_reduction = share_of_daily_variance,
+           average_monthly_activity = avg_monthly_activity,
+           share_of_monthly_reduction = share_of_monthly_variance)
+  
+  trust_table <- trust_grouped_df %>% 
+    kbl(caption = paste('Average speciality reduction per working day: ',trust),
+        col.names = c('Treatment Function', 
+                      'Average Monthly Activity', 
+                      'Share of Monthly Reduction',
+                      'Average Daily Activity',
+                      'Share of Daily Reduction')) %>% 
+    kable_styling(bootstrap_options = 'striped',
+                  font_size = 12,
+                  full_width = FALSE) %>% 
+    cat
+    cat('\n', '<br>', '\n\n')
+}
+```
+
+

@@ -1,0 +1,49 @@
+/* 2019/20 baseline EXCL March as calculating separately*/
+SELECT 					
+	CAST(Dateadd(day,1,EOMONTH(Appointment_Date,-1))AS DATE) AS Month_commencing 				
+	,OPA.[Treatment_Function_Code]	 			
+	,SUBSTRING(TFC.[Treatment_Function_Desc],5,LEN(TFC.[Treatment_Function_Desc])) AS Treatment_Function			
+	,CASE
+		WHEN RIGHT(OPA.Der_Provider_Code,2) = '00' THEN LEFT(der_provider_code,3) 
+		WHEN LEFT(der_provider_code,3) = 'RXH' THEN 'RYR'
+		WHEN LEFT(der_provider_code,3) = 'RD7' THEN 'RDU'
+		ELSE OPA.Der_Provider_Code 
+		END as Der_Provider_Code
+	,STP_Code
+	,COUNT(*) AS Activity				
+					
+FROM
+	[NHSE_SUSPlus_Live].[dbo].[tbl_Data_SEM_OPA] AS OPA
+	LEFT OUTER JOIN [NHSE_Reference].[dbo].[tbl_Ref_DataDic_ZZZ_TreatmentFunction] AS TFC				
+		ON OPA.[Treatment_Function_Code] = TFC.[Treatment_Function_Code]
+	LEFT OUTER JOIN [NHSE_Reference].[dbo].[tbl_Ref_ODS_Provider_Hierarchies] AS REF 
+		ON (CASE
+				WHEN RIGHT(OPA.Der_Provider_Code,2) = '00' THEN LEFT(der_provider_code,3) 			
+				WHEN LEFT(der_provider_code,3) = 'RXH' THEN 'RYR'
+				ELSE OPA.Der_Provider_Code END) = REF.Organisation_Code 
+
+WHERE 					
+	[First_Attendance] IN ('2','4')				
+	AND [Attendance_Status] IN ('5','6')				
+	AND Der_Financial_Year IN ('2019/20')
+	AND OPA.Der_Activity_Month not in ('202003')
+	AND OPA.[Treatment_Function_Code] NOT IN ('812', '501','560', '700', '710', '711', '712', '713', '715', '720', '721', '722', '723', '724', '725', '726', '727', '199', '499')
+	AND REF.Region_Code = 'Y59'
+	AND Administrative_Category = '01'
+	AND LEFT(OPA.[Core_HRG],2) = 'WF'
+	AND LEFT(der_Provider_Code,1) = 'R'
+
+GROUP BY					
+	CAST(Dateadd(day,1,EOMONTH(Appointment_Date,-1))AS DATE) 				
+	,OPA.[Treatment_Function_Code]	 			
+	,SUBSTRING(TFC.[Treatment_Function_Desc],5,LEN(TFC.[Treatment_Function_Desc]))						
+	,CASE
+		WHEN RIGHT(OPA.Der_Provider_Code,2) = '00' THEN LEFT(der_provider_code,3) 
+		WHEN LEFT(der_provider_code,3) = 'RXH' THEN 'RYR'
+		WHEN LEFT(der_provider_code,3) = 'RD7' THEN 'RDU'
+		ELSE OPA.Der_Provider_Code 
+		END
+	,STP_Code
+
+ORDER BY 
+	CAST(Dateadd(day,1,EOMONTH(Appointment_Date,-1))AS DATE) DESC

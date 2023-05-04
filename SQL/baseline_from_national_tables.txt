@@ -1,0 +1,18 @@
+
+SELECT 
+      [OrgCode]
+      ,[OrgType]
+      ,[DimDateStart] as month_commencing
+      ,[Value]
+
+
+FROM [NHSE_Sandbox_NHS_Planning_Round].[dbo].[tbl_202324_PlanningData]
+
+WHERE 
+	PlanningRef = 'E.M.38'
+	AND [RegionCode] = 'Y59'
+	AND SourceType IS NULL
+	AND DimFYear in ('2020')--,'2022','2023','2024')
+	AND [OrgType] = 'Provider'
+
+ORDER BY [DimDateStart] asc

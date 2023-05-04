@@ -1,0 +1,16 @@
+SELECT 
+	LEFT(Der_Activity_Month,4)+'-'+RIGHT(Der_Activity_Month,2)+'-'+'01' AS month_commencing
+	,Provider_or_IS_CCG_Code_A AS [provider_code]
+	,STP_ICS
+	,Centralised_NHSE_Commissioned
+	,TFC
+	,Activity
+
+ FROM [NHSE_Sandbox_ASF_Pricing].[everyone].[Palantir_A&G_Time_Series_HRG_TFC_SITE_V10]
+
+ where Provider_or_IS_CCG_Code_A in ('RHW','RTH','RXQ','RDU','RHM','RHU','R1F','RN5','RN7','RPA',
+           'RVV','RWF','RTK','RTP','RA2','RPC','RXC','RYR')
+AND Activity_Type = 'OPA'
+AND Der_Appointment_Type = 'FUp'
+ANd LEFT(HRG,2) = 'WF'
+AND Der_Activity_Month BETWEEN '201904' AND '202003'
