@@ -52,7 +52,7 @@ baseline <- left_join(x = baseline,
 ## create a dataframe with:
 ## the actual activity, 
 ## the baseline adjusted for working days, 
-## and the ambition
+## and the target
 
 all_no_spec <- union(x = (baseline %>% 
                             mutate(activity = activity/working_days_1920*working_days_2223) %>% 
@@ -71,7 +71,7 @@ all_no_spec <- union(x = all_no_spec,
                                    activity) %>% 
                             rename(provider_code = orgcode)) %>%
                        mutate(activity = activity*0.75) %>% 
-                       mutate(period = 'ambition'))
+                       mutate(period = 'target'))
 
 ## change the dates shown to the month name and which financial month it is
 ## this means that we're not splitting activity by year when comparing baselines variances etc.
@@ -89,14 +89,14 @@ all_no_spec <- left_join(x = all_no_spec,
 wide_no_spec <- all_no_spec %>% 
   pivot_wider(names_from = period,
               values_from = activity) %>% 
-  mutate(variance = actual-ambition) %>% 
+  mutate(variance = actual-target) %>% 
   arrange(provider_code,
           fin_month) 
 
 ## create a variance dataframe to append to the main one
 variance <- wide_no_spec %>% select(-c(baseline,
                                        actual,
-                                       ambition)) %>% 
+                                       target)) %>% 
   rename(activity = variance) %>% 
   mutate(period = 'variance')
 
@@ -182,7 +182,7 @@ wide_spec <- left_join(x = wide_spec,
            speciality_activity,
            total_activity,
            baseline,           
-           ambition,
+           target,
            variance,
            proportion_of_total
   ))
@@ -200,7 +200,7 @@ wide_spec <- left_join(x = wide_spec,
            speciality_activity,
            total_activity,
            baseline,           
-           ambition,
+           target,
            variance,
            proportion_of_total
   )) %>% 
@@ -304,7 +304,7 @@ larger_specialities_monthly <- left_join(x= larger_specialities,
          treatment_function,
          total_activity,
          baseline,
-         ambition,
+         target,
          variance,
          variance_per_wd,
          cohort_activity,
@@ -334,7 +334,7 @@ larger_specialities_average <- larger_specialities %>%
          treatment_function,
          total_activity,
          baseline,
-         ambition,
+         target,
          variance,
          cohort_activity,
          speciality_activity) %>% 
@@ -344,7 +344,7 @@ larger_specialities_average <- larger_specialities %>%
            treatment_function) %>% 
   summarise(total_activity = sum(total_activity),
             baseline = sum(baseline),
-            ambition = sum(ambition),
+            target = sum(target),
             variance = sum(variance),
             cohort_activity = sum(cohort_activity),
             speciality_activity = sum(speciality_activity)) %>% 
@@ -375,9 +375,9 @@ larger_specialities_average <- larger_specialities %>%
 ######################################################################### 
 wide_year <- wide_no_spec %>% 
   group_by(provider_code) %>% 
-  summarise(across(c(baseline,actual,ambition), ~ sum(.,na.rm=TRUE))) %>% 
-  mutate(variance = actual-ambition,
-         perc_variance = actual/ambition-1,
+  summarise(across(c(baseline,actual,target), ~ sum(.,na.rm=TRUE))) %>% 
+  mutate(variance = actual-target,
+         perc_variance = actual/target-1,
          variance_per_wd = variance/total_wd_2223)
 
 ## prep a dataframe to put into a table showing the specialities ordered by reduction
@@ -399,7 +399,7 @@ reduction_per_day_per_spec <- larger_specialities_monthly %>%
 wide_no_spec <- all_no_spec %>% 
   pivot_wider(names_from = period,
               values_from = activity) %>% 
-  mutate(variance = actual-ambition) %>% 
+  mutate(variance = actual-target) %>% 
   arrange(provider,
           fin_month)
 
@@ -412,7 +412,7 @@ wide_no_spec <- left_join(x= wide_no_spec,
                           by= 'month_name_short',
                           keep = FALSE) %>% 
   mutate(activity_per_wd = actual/wd_2223,
-         ambition_per_wd = ambition/wd_2223,
+         target_per_wd = target/wd_2223,
          variance_per_wd = variance/wd_2223) %>%   
   select(month_name_short,
          fin_month,
@@ -420,10 +420,10 @@ wide_no_spec <- left_join(x= wide_no_spec,
          provider,
          baseline,
          actual,
-         ambition,
+         target,
          variance,
          activity_per_wd,
-         ambition_per_wd,
+         target_per_wd,
          variance_per_wd)
 
 reduction_per_day <- wide_no_spec %>% 
@@ -441,8 +441,8 @@ reduction_per_day <- wide_no_spec %>%
 
 wide_year <- wide_no_spec %>% 
   group_by(icb, provider) %>% 
-  summarise(across(c(baseline,actual,ambition), ~ sum(.,na.rm=TRUE))) %>% 
+  summarise(across(c(baseline,actual,target), ~ sum(.,na.rm=TRUE))) %>% 
   ungroup() %>% 
-  mutate(variance = actual-ambition,
+  mutate(variance = actual-target,
          percent_vs_2223 = variance/actual,
          variance_per_wd = variance/total_wd_2223)
