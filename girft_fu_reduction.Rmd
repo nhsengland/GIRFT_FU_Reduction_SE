@@ -152,7 +152,9 @@ cat("###", trust, '<br>', '\n')
     rename(average_daily_activity = avg_activity_per_wd,
            share_of_daily_reduction = share_of_daily_variance,
            average_monthly_activity = avg_monthly_activity,
-           share_of_monthly_reduction = share_of_monthly_variance)
+           share_of_monthly_reduction = share_of_monthly_variance) %>% 
+    bind_rows(summarise(.,across(where(is.numeric),sum),
+                        across(where(is.character),~'Total')))
   
   trust_table <- trust_grouped_df %>% 
     kbl(caption = paste('Average speciality reduction per working day: ',trust),
