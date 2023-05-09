@@ -41,4 +41,4 @@ wd_adj_baseline <- left_join(x = baseline,
   mutate(target = adj_activity*.075)
 
 write_xlsx(wd_adj_baseline,
-           paste0("Output/baseline_and_goal.csv"))
+           paste0("Output/baseline_and_goal.xlsx"))
