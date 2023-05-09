@@ -17,6 +17,7 @@ bank_holiday <- rbind(data.frame(date=c('2017-01-02',
                                         '2017-12-25',
                                         '2017-12-26')),
                       bank_holiday)
+bank_holiday <- as.Date(bank_holiday$date)
 
 
 ## creates a list of the days between first April 2017 and 31 March 2024
