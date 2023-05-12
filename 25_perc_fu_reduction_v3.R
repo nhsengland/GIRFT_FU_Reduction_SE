@@ -37,7 +37,7 @@ icb_list <- c(icb_list,region_name)
 for(icb in icb_list) {
   paramicb <- icb
   rmarkdown::render('girft_fu_reduction.Rmd', 
-                    output_file = paste0("girft-fu_reduction_",paramicb, "_", format(Sys.Date(),'%d%m%Y')),
+                    output_file = paste0("op-fu_reduction_",paramicb, "_", format(Sys.Date(),'%d%m%Y')),
                     output_dir = "Output", 
                     params = list(icb = paramicb))
   }

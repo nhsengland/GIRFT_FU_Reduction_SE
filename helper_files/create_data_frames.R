@@ -27,12 +27,17 @@ baseline <- left_join(x = baseline,
   rename(working_days_1920 = working_days,
          activity = value)
 
-## create a 2022/23 working days set to join into baseline for comparison calculation
-working_days_2223 <- monthly_working_days %>% 
-  filter(fin_year == '2022-23') %>% 
+## create a 2023/24 working days set to join into baseline for comparison calculation, 
+## the goal is to hit the baseline for the working day adjusted activity. So we are using:
+## > 2019/20 planning values for the baseline including the March counterfactual
+## > 2022/23 activity for what the trusts are currently doing (or as near as we can see it)
+## > 2023/24 working days to figure out how much they should be doing to hit the goal
+
+working_days_2324 <- monthly_working_days %>% 
+  filter(fin_year == '2023-24') %>% 
   select(month_name_short,
          working_days) %>% 
-  rename(working_days_2223 = working_days)
+  rename(working_days_2324 = working_days)
 
 ## merge this into baseline frame with a 2022/23 working day set
 baseline <- left_join(x = baseline,
@@ -40,7 +45,7 @@ baseline <- left_join(x = baseline,
                              filter(fin_year == '2022-23') %>%
                              select(month_name_short,
                                     working_days) %>%
-                             rename(working_days_2223 = working_days)),
+                             rename(working_days_2324 = working_days)),
                       by = c('month_name_short'),
                       keep = FALSE)
 
@@ -55,7 +60,7 @@ baseline <- left_join(x = baseline,
 ## and the target
 
 all_no_spec <- union(x = (baseline %>% 
-                            mutate(activity = activity/working_days_1920*working_days_2223) %>% 
+                            mutate(activity = activity/working_days_1920*working_days_2324) %>% 
                             select(month_commencing,
                                    orgcode,
                                    activity) %>% 
@@ -65,7 +70,7 @@ all_no_spec <- union(x = (baseline %>%
 
 all_no_spec <- union(x = all_no_spec,
                      y = (baseline %>% 
-                            mutate(activity = activity/working_days_1920*working_days_2223) %>% 
+                            mutate(activity = activity/working_days_1920*working_days_2324) %>% 
                             select(month_commencing,
                                    orgcode,
                                    activity) %>% 
@@ -291,11 +296,11 @@ larger_specialities_monthly <- left_join(x= larger_specialities,
                                                filter(fin_year == '2022-23') %>%
                                                select(c(month_name_short,
                                                         working_days)) %>%
-                                               rename(wd_2223 = working_days)),
+                                               rename(wd_2324 = working_days)),
                                          by= 'month_name_short',
                                          keep = FALSE) %>% 
-  mutate(activity_per_wd = speciality_activity/wd_2223,
-         variance_per_wd = variance/wd_2223,
+  mutate(activity_per_wd = speciality_activity/wd_2324,
+         variance_per_wd = variance/wd_2324,
          wd_variance_by_spec = variance_per_wd*cohort_proportion) %>% 
   select(icb,
          provider,
@@ -310,7 +315,7 @@ larger_specialities_monthly <- left_join(x= larger_specialities,
          cohort_activity,
          cohort_proportion,
          monthly_reduction,
-         wd_2223,
+         wd_2324,
          speciality_activity,
          activity_per_wd,
          wd_variance_by_spec)
@@ -318,13 +323,13 @@ larger_specialities_monthly <- left_join(x= larger_specialities,
 ## for simplicity the df below gives the average activity per working day across the year
 ## this if statement is in because the first iteration of this report is being created before march freeze is in
 if(max(actuals_2022_23$month_commencing) <= '2023-03-01'){
-  total_wd_2223 <- working_days_2223 %>% 
+  total_wd_2324 <- working_days_2324 %>% 
     filter(month_name_short != 'Mar') 
-  month_count <- nrow(total_wd_2223)
-  total_wd_2223 <- as.numeric(sum(total_wd_2223$working_days_2223))
+  month_count <- nrow(total_wd_2324)
+  total_wd_2324 <- as.numeric(sum(total_wd_2324$working_days_2324))
   }else{
-    month_count <- nrow(working_days_2223)
-    total_wd_2223 <- as.numeric(sum(working_days_2223$working_days_2223))
+    month_count <- nrow(working_days_2324)
+    total_wd_2324 <- as.numeric(sum(working_days_2324$working_days_2324))
     }
 
 larger_specialities_average <- larger_specialities %>% 
@@ -353,8 +358,8 @@ larger_specialities_average <- larger_specialities %>%
          avg_monthly_activity = speciality_activity/month_count,
          avg_monthly_variance = variance/month_count,
          share_of_monthly_variance = avg_monthly_variance*cohort_proportion,
-         avg_activity_per_wd = speciality_activity/total_wd_2223,
-         variance_per_wd = variance/total_wd_2223,
+         avg_activity_per_wd = speciality_activity/total_wd_2324,
+         variance_per_wd = variance/total_wd_2324,
          share_of_daily_variance = variance_per_wd*cohort_proportion) %>% 
   arrange(icb,
           provider,
@@ -378,7 +383,7 @@ wide_year <- wide_no_spec %>%
   summarise(across(c(baseline,actual,target), ~ sum(.,na.rm=TRUE))) %>% 
   mutate(variance = actual-target,
          perc_variance = actual/target-1,
-         variance_per_wd = variance/total_wd_2223)
+         variance_per_wd = variance/total_wd_2324)
 
 ## prep a dataframe to put into a table showing the specialities ordered by reduction
 
@@ -408,12 +413,12 @@ wide_no_spec <- left_join(x= wide_no_spec,
                                 filter(fin_year == '2022-23') %>%
                                 select(c(month_name_short,
                                          working_days)) %>%
-                                rename(wd_2223 = working_days)),
+                                rename(wd_2324 = working_days)),
                           by= 'month_name_short',
                           keep = FALSE) %>% 
-  mutate(activity_per_wd = actual/wd_2223,
-         target_per_wd = target/wd_2223,
-         variance_per_wd = variance/wd_2223) %>%   
+  mutate(activity_per_wd = actual/wd_2324,
+         target_per_wd = target/wd_2324,
+         variance_per_wd = variance/wd_2324) %>%   
   select(month_name_short,
          fin_month,
          icb,
@@ -445,4 +450,4 @@ wide_year <- wide_no_spec %>%
   ungroup() %>% 
   mutate(variance = actual-target,
          percent_vs_2223 = variance/actual,
-         variance_per_wd = variance/total_wd_2223)
+         variance_per_wd = variance/total_wd_2324)
