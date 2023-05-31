@@ -6,7 +6,7 @@ monthly_working_days <- monthly_working_days %>%
          working_days) %>% 
   mutate(month_commencing = as.Date(monthly_working_days$month_commencing))
 
-## get overall activity without speciality
+## get overall activity without specialty
 actuals_2022_23_no_spec <- actuals_2022_23 %>% 
   select(-c(treatment_function_code,
             treatment_function,
@@ -41,13 +41,9 @@ working_days_2324 <- monthly_working_days %>%
 
 ## merge this into baseline frame with a 2022/23 working day set
 baseline <- left_join(x = baseline,
-                      y = (monthly_working_days %>%
-                             filter(fin_year == '2022-23') %>%
-                             select(month_name_short,
-                                    working_days) %>%
-                             rename(working_days_2324 = working_days)),
+                      y = working_days_2324,
                       by = c('month_name_short'),
-                      keep = FALSE)
+                      keep = FALSE) 
 
 ## for some reason working day adjustment is made to the baseline and not the actuals year
 ## calculate wd adjusted activity for rest of baseline
@@ -286,14 +282,13 @@ larger_specialities <- left_join(x= larger_specialities,
           fin_month,
           treatment_function)
 
-## add number of working days per month for the year where the activity was recorded
-## calculate speciality activity per working day
+## calculate speciality activity adjusted for working day in 23/24
 ## calculate the variance per wd
 ## calculate the portion of the daily variance each speciality accounts for
 
 larger_specialities_monthly <- left_join(x= larger_specialities,
                                          y= (monthly_working_days %>% 
-                                               filter(fin_year == '2022-23') %>%
+                                               filter(fin_year == '2023-24') %>%
                                                select(c(month_name_short,
                                                         working_days)) %>%
                                                rename(wd_2324 = working_days)),
@@ -385,7 +380,7 @@ wide_year <- wide_no_spec %>%
          perc_variance = actual/target-1,
          variance_per_wd = variance/total_wd_2324)
 
-## prep a dataframe to put into a table showing the specialities ordered by reduction
+## prep a dataframe to put into a table showing the specialties ordered by reduction
 
 reduction_per_day_per_spec <- larger_specialities_monthly %>% 
   select(month_name_short,
@@ -410,7 +405,7 @@ wide_no_spec <- all_no_spec %>%
 
 wide_no_spec <- left_join(x= wide_no_spec,
                           y= (monthly_working_days %>% 
-                                filter(fin_year == '2022-23') %>%
+                                filter(fin_year == '2023-24') %>%
                                 select(c(month_name_short,
                                          working_days)) %>%
                                 rename(wd_2324 = working_days)),

@@ -87,7 +87,7 @@ param_wide_year %>%
                                         actual == baseline ~ highlight,
                                         actual < baseline ~ table_green))) %>%
   mutate_at(vars(3:6),~round(.,0)) %>% 
-  kbl(caption = '2022/23 trust activity vs working day adjusted baseline',
+  kbl(caption = '2022/23 trust activity vs baseline adjusted for 23/24 working days',
       col.names = c('ICB','Trust','Baseline activity', '22/23 actual', '23/24 Target', 'Variance','Percentage Variance'),
       format.args = list(big.mark = ","),
       escape = FALSE) %>%
