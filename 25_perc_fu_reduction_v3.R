@@ -30,6 +30,7 @@ icb_list <- lkup_system_names %>%
 ## set the region name
 region_name  <- 'se_region'
 icb_list <- c(icb_list,region_name)
+full_region_name <- 'the South East region'
 
 ## for the parameters we will pull each system once
 ## then collapse the list into a set to call all of them for the region view

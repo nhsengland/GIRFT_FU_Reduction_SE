@@ -28,7 +28,7 @@ system_name <- if(paramicb != region_name){
    pull(stp_name)
   system_name <- str_replace(str_to_title(system_name),'Nhs','NHS')
 } else {
-  system_name <- 'the South East region'
+  system_name <- full_region_name
 } 
 
 ```
