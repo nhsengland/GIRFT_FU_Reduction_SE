@@ -217,7 +217,7 @@ wide_spec <- left_join(x = wide_spec,
 ## what if we limited the requirement to just those specialities that did either
 ## a minimum of 1% of the trust's total monthly activity 
 ## OR see at least 2000 patients per month on average 
-## AND activity has been reported against at least 6 out of the 12 months of data
+## AND activity has been reported against at least 8 out of the 12 months of data
 
 larger_spec_id <- left_join(x = (wide_spec %>% 
                                    select(icb,
