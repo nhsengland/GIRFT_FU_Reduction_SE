@@ -130,9 +130,9 @@ This report has been produced using the "flex" submission of data for March 2023
 
 ## Speciality level reductions {.tabset .tabset-pills}
 
-For the trusts in `r paste(system_name)`, the tab below give the average daily activity for the first 11 months of 2022/23 (March "flex" data has been excluded) and shows the reduction that would be needed in order to achieve the target. The reduction is given in two ways: per working day and per month. The per working day figure assumes that at least one clinic is run for that speciality every working day, this will not be true for every speciality so the per month figure is given to show an average monthly reduction which may be more useful for specialities that only run clinics on a weekly or less frequent basis.
+For the trusts in `r paste(system_name)`, the tab below give the average daily activity for the first 11 months of 2022/23 (March "flex" data has been excluded) and shows the reduction that would be needed in order to achieve the target. The reduction is given in two ways: per working day and per month. The per working day figure assumes that at least one clinic is run for that specialty every working day, this will not be true for every specialty so the per month figure is given to show an average monthly reduction which may be more useful for specialties that only run clinics on a weekly or less frequent basis.
 
-It is recognised that not all treatment pathways are equal and some specialities may have more difficulty reducing their number of follow up appointments to 75% of the working day adjusted baseline than others. Our hope is that by identifying the "fair share" split for the providers' larger specialities we are supporting trusts to then balance the reduction goal between specilities according to clinical need.
+It is recognised that not all treatment pathways are equal and some specialties may have more difficulty reducing their number of follow up appointments to 75% of the working day adjusted baseline than others. Our hope is that by identifying the "fair share" split for the providers' larger specialties we are supporting trusts to then balance the reduction goal between specialties according to clinical need.
 
 ```{r reduction per day table, results='asis'}
 trusts <- param_large_spec_activity %>% 
