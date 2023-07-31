@@ -8,7 +8,7 @@ params:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 param_no_spec <- all_no_spec %>% filter(provider == paramtrust)
 param_activity_proportion <- annual_activity_proportion %>% filter(provider == paramtrust)
@@ -19,9 +19,6 @@ param_wide_year <- wide_year %>% filter(provider == paramtrust)
 trust_name <- lkup_provider_names %>% 
   filter(provider_short_name == paramtrust) %>% 
   pull(acute_full_name)
-
-trust_name <- str_replace(str_to_title(trust_name),'Nhs','NHS')
-
 ```
 
 ## Purpose and methodology of this document
@@ -37,16 +34,11 @@ This report has been produced using the SUS data available to NHS England as of 
 The chart below shows the working day adjusted activity for the baseline period, the actual activity for 2022/23 and the target. 
 
 ```{r activity vs baseline chart,results='asis'}
-trusts <- param_no_spec %>% 
-  distinct(provider) %>% 
-  pull(provider)
 
-for (i in trusts){
-  cat("###", i, '<br>', '\n')
-  trust_data <- param_no_spec %>% 
-    filter((period == 'baseline' | period == 'actual'| period == 'target')& icb==i)
-  plot_title <- paste0('Comparison of activity vs baseline vs target for ',t,'') 
-  plot <- icb_data %>% 
+trust_data <- param_no_spec %>% 
+  filter((period == 'baseline' | period == 'actual'| period == 'target'))
+  plot_title <- paste0('Comparison of activity vs baseline vs target for ',paramtrust) 
+  plot <- trust_data %>% 
     ggplot(aes(x=month_of_actual,
                          y=activity,
                          color = period))+
@@ -63,8 +55,8 @@ for (i in trusts){
          x='Month')+
     facet_wrap(~ provider)
   print(plot)
-  cat('\n', '<br>', '\n\n')
-}
+
+
 
 ```
 
@@ -86,8 +78,7 @@ param_wide_year %>%
       col.names = c('ICB','Trust','Baseline activity', '22/23 actual', '23/24 Target', 'Variance','Percentage Variance'),
       format.args = list(big.mark = ","),
       escape = FALSE) %>%
-  kable_styling(bootstrap_options = 'striped',
-                font_size = 12,
+  kable_styling(font_size = 12,
                 full_width = FALSE)
 ```
 ## Closing the Gap
@@ -127,16 +118,8 @@ The tab below give the average daily activity for the first 11 months of 2022/23
 It is recognised that not all treatment pathways are equal and some specialties may have more difficulty reducing their number of follow up appointments to 75% of the working day adjusted baseline than others. Our hope is that by identifying the "fair share" split for the providers' larger specialties we are supporting trusts to then balance the reduction goal between specialties according to clinical need.
 
 ```{r reduction per day table, results='asis'}
-trusts <- param_large_spec_activity %>% 
-  distinct(provider) %>% 
-  pull(provider)
 
-for (trust in trusts){
-
-cat("###", trust, '<br>', '\n')
-  
   trust_grouped_df <- param_large_spec_activity %>% 
-    filter(provider == trust) %>%
     select(treatment_function,
            avg_monthly_activity,
            share_of_monthly_variance,
@@ -152,7 +135,7 @@ cat("###", trust, '<br>', '\n')
                         across(where(is.character),~'Total'))) 
 
   
-  trust_table <- trust_grouped_df %>% 
+  trust_grouped_df %>% 
     mutate(proportion_contributed = percent(proportion_contributed,1,format='f')) %>%
     kbl(caption = paste('Average speciality reduction per working day: ',trust),
         col.names = c('Treatment Function', 
@@ -163,10 +146,7 @@ cat("###", trust, '<br>', '\n')
                       'Proportion of Reduction')) %>% 
     kable_styling(bootstrap_options = 'striped',
                   font_size = 12,
-                  full_width = FALSE) %>% 
-    cat
-    cat('\n', '<br>', '\n\n')
-}
+                  full_width = FALSE) 
 ```
 
 
