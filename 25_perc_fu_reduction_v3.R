@@ -31,6 +31,10 @@ icb_list <- lkup_system_names %>%
 region_name  <- 'se_region'
 icb_list <- c(icb_list,region_name)
 full_region_name <- 'the South East region'
+trust_list <- lkup_provider_names %>% 
+  filter(provider_code %in% acutes) %>% 
+  pull(provider_short_name)
+
 
 ## for the parameters we will pull each system once
 ## then collapse the list into a set to call all of them for the region view
@@ -39,6 +43,14 @@ for(icb in icb_list) {
   paramicb <- icb
   rmarkdown::render('girft_fu_reduction.Rmd', 
                     output_file = paste0("op-fu_reduction_",paramicb, "_", format(Sys.Date(),'%d%m%Y')),
-                    output_dir = "Output", 
+                    output_dir = "Output/systems", 
                     params = list(icb = paramicb))
-  }
+}
+
+for(trust in trust_list) {
+  paramtrust <- trust
+  rmarkdown::render('girft_fu_reduction_trust.Rmd', 
+                    output_file = paste0("op-fu_reduction_",paramtrust, "_", format(Sys.Date(),'%d%m%Y')),
+                    output_dir = "Output/trusts", 
+                    params = list(trust = paramtrust))
+}

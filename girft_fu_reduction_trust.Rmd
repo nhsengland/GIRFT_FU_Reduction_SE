@@ -1,60 +1,51 @@
 ---
-title: "`r paste('Outpatient Follow-Up Reduction - ', paramicb)`"
+title: "`r paste('Outpatient Follow-Up Reduction - ', paramtrust)`"
 output: html_document
 date: "`r format(Sys.Date(),'%d/%m/%Y')`"
 sansfont: Calibri   
 params: 
-  icb: paramicb
+  trust: paramtrust
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 
-if(paramicb != region_name){
-  param_no_spec <- all_no_spec %>% filter(icb == paramicb)
-  param_activity_proportion <- annual_activity_proportion %>% filter(icb == paramicb)
-  param_large_spec_activity <- larger_specialities_average %>% filter(icb==paramicb)
-  param_wide_year <- wide_year %>% filter(icb==paramicb)
-} else {
-  param_no_spec <- all_no_spec
-  param_activity_proportion <- annual_activity_proportion
-  param_large_spec_activity <- larger_specialities_average
-  param_wide_year <- wide_year
-  }
+param_no_spec <- all_no_spec %>% filter(provider == paramtrust)
+param_activity_proportion <- annual_activity_proportion %>% filter(provider == paramtrust)
+param_large_spec_activity <- larger_specialities_average %>% filter(provider == paramtrust)
+param_wide_year <- wide_year %>% filter(provider == paramtrust)
 
-system_name <- if(paramicb != region_name){
-  system_name <- lkup_system_names %>% 
-    filter(short_name == paramicb) %>% 
-   pull(stp_name)
-  system_name <- str_replace(str_to_title(system_name),'Nhs','NHS')
-} else {
-  system_name <- full_region_name
-} 
+
+trust_name <- lkup_provider_names %>% 
+  filter(provider_short_name == paramtrust) %>% 
+  pull(acute_full_name)
+
+trust_name <- str_replace(str_to_title(trust_name),'Nhs','NHS')
 
 ```
 
 ## Purpose and methodology of this document
 
-In order to support `r paste(system_name)` to reach the target of reducing outpatient follow up appointments that do not involve a procedure by 25% compared to financial year 2019/20, NHS England has reviewed the activity reported to SUS by the main acute providers within the ICB. This activity has been adjusted for differences in working days in each month and then the 75% target has been calculated for each month. This target has been compared to the reported activity for the equivalent month in 2022/23 to determine the variance between the target and the actual reported activity for 2022/23. 
+In order to support `r paste(trust_name)` to reach the target of reducing outpatient follow up appointments that do not involve a procedure by 25% compared to financial year 2019/20. This activity has been adjusted for differences in working days in each month and then the 75% target has been calculated for each month. This target has been compared to the reported activity for the equivalent month in 2022/23 to determine the variance between the target and the actual reported activity for 2022/23. 
 
 **CAVEAT**
 
-This report has been produced using the SUS data available to NHS England as of the date of the report. At this time there are some known issues with the accuracy of counting and coding changes in this data set. This report has been produced despite known data quality issues because the goal of this document is to facilitate supportive conversations, however please treat the values and charting in this report as indicative and potentially subject to change.
+This report has been produced using the SUS data available to NHS England as of the date of the report. At this time there are some known issues with the accuracy of counting and coding changes in this data set. This report has been produced despite known data quality issues because the goal of this document is to facilitate supportive conversations, however please treat the values and charting in this report as indicative and potentially subject to change
 
 ## Current position {.tabset .tabset-pills}
 
-The charts below show the trusts within `r paste(system_name)` to illustrate the working day adjusted activity for the baseline period, the actual activity for 2022/23 and the target. 
+The chart below shows the working day adjusted activity for the baseline period, the actual activity for 2022/23 and the target. 
 
 ```{r activity vs baseline chart,results='asis'}
-icbs <- param_no_spec %>% 
-  distinct(icb) %>% 
-  pull(icb)
+trusts <- param_no_spec %>% 
+  distinct(provider) %>% 
+  pull(provider)
 
-for (i in icbs){
+for (i in trusts){
   cat("###", i, '<br>', '\n')
-  icb_data <- param_no_spec %>% 
+  trust_data <- param_no_spec %>% 
     filter((period == 'baseline' | period == 'actual'| period == 'target')& icb==i)
-  plot_title <- paste0('Comparison of activity vs baseline vs target for ',i,' ICB providers') 
+  plot_title <- paste0('Comparison of activity vs baseline vs target for ',t,'') 
   plot <- icb_data %>% 
     ggplot(aes(x=month_of_actual,
                          y=activity,
@@ -79,7 +70,7 @@ for (i in icbs){
 
 ## 2022/23 trust activity vs working day adjusted baseline
 
-The table below shows the actual follow-up without procedure activity for 2022/23 vs the working day adjusted baseline. The percentage variance column shows the percentage reduction in 2022/23 levels of activity required in order to meet the target. Red highlighting is used for trusts that will need to make a greater than 25% reduction, green for those who are already showing a reduction in follow-up activity (without procedure) compared to the baseline.
+The table below shows the actual follow-up without procedure activity for 2022/23 vs the working day adjusted baseline. The percentage variance column shows the percentage reduction in 2022/23 levels of activity required in order to meet the target. Red highlighting is used if the trust will need to make a greater than 25% reduction, green for those who are already showing a reduction in follow-up activity (without procedure) compared to the baseline.
 
 ```{r baseline vs 2223 actuals}
 param_wide_year %>% 
@@ -101,7 +92,7 @@ param_wide_year %>%
 ```
 ## Closing the Gap
 
-NHS England recognises that reducing any amount of activity to 75% of the level undertaken in 2019/20 is not a trivial task. In order to support systems in identifying one possible approach, an analysis has been conducted to try to create a "fair share" goal for the specialities where:
+NHS England recognises that reducing any amount of activity to 75% of the level undertaken in 2019/20 is not a trivial task. In order to support systems in identifying one possible approach, an analysis has been conducted to try to create a "fair share" goal for the specialties where:
 
 * The trust consistently undertakes activity and 
 * The volume of activity is sufficient to mean that the time and effort required to identify opportunities to reduce activity will have a meaningful impact to the proportion of follow-up activity undertaken by the Trust.  
@@ -114,7 +105,7 @@ The criteria used were treatment function codes where:
   
   + there is a monthly average of at least 2000 outpatient follow up appointments (without procedure)
   
-For the trusts in `r paste(system_name)`, the identified cohorts account for the following percentages of the trusts total follow up activity (without procedure):
+For the trusts in `r paste(trust_name)`, the identified cohorts account for the following percentages of the trusts total follow up activity (without procedure):
 
 ```{r proportion of activity table, results = 'asis'}
 param_activity_proportion %>% 
@@ -129,9 +120,9 @@ param_activity_proportion %>%
 The total variance against the 75% reduction target has then been split based on the percentage each of these treatment functions contributes to the activity *of the cohort described above*.
 
 
-## Speciality level reductions {.tabset .tabset-pills}
+## Specialty level reductions {.tabset .tabset-pills}
 
-For the trusts in `r paste(system_name)`, the tab below give the average daily activity for the first 11 months of 2022/23 (March "flex" data has been excluded) and shows the reduction that would be needed in order to achieve the target. The reduction is given in two ways: per working day and per month. The per working day figure assumes that at least one clinic is run for that specialty every working day, this will not be true for every specialty so the per month figure is given to show an average monthly reduction which may be more useful for specialties that only run clinics on a weekly or less frequent basis.
+The tab below give the average daily activity for the first 11 months of 2022/23 (March "flex" data has been excluded) and shows the reduction that would be needed in order to achieve the target. The reduction is given in two ways: per working day and per month. The per working day figure assumes that at least one clinic is run for that specialty every working day, this will not be true for every specialty so the per month figure is given to show an average monthly reduction which may be more useful for specialties that only run clinics on a weekly or less frequent basis.
 
 It is recognised that not all treatment pathways are equal and some specialties may have more difficulty reducing their number of follow up appointments to 75% of the working day adjusted baseline than others. Our hope is that by identifying the "fair share" split for the providers' larger specialties we are supporting trusts to then balance the reduction goal between specialties according to clinical need.
 

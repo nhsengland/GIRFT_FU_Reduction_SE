@@ -317,15 +317,17 @@ larger_specialities_monthly <- left_join(x= larger_specialities,
 
 ## for simplicity the df below gives the average activity per working day across the year
 ## this if statement is in because the first iteration of this report is being created before march freeze is in
-if(max(actuals_2022_23$month_commencing) <= '2023-03-01'){
-  total_wd_2324 <- working_days_2324 %>% 
-    filter(month_name_short != 'Mar') 
-  month_count <- nrow(total_wd_2324)
-  total_wd_2324 <- as.numeric(sum(total_wd_2324$working_days_2324))
-  }else{
+
+
+#if(max(actuals_2022_23$month_commencing) <= '2023-03-01'){
+#  total_wd_2324 <- working_days_2324 %>% 
+#    filter(month_name_short != 'Mar') 
+#  month_count <- nrow(total_wd_2324)
+#  total_wd_2324 <- as.numeric(sum(total_wd_2324$working_days_2324))
+#  }else{
     month_count <- nrow(working_days_2324)
     total_wd_2324 <- as.numeric(sum(working_days_2324$working_days_2324))
-    }
+#    }
 
 larger_specialities_average <- larger_specialities %>% 
   select(icb,
